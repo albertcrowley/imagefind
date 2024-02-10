@@ -78,8 +78,8 @@ class Database:
                 VALUES (?, ?, ?, ?, ?, ? ,?, ?)
             '''
 
-            cursor.execute(sql, (file_data.filename, 777, file_data.file_last_modified, file_data.phash_last_modified,
-                  file_data.phash6, file_data.phash8, "hithere", file_data.phash12))
+            cursor.execute(sql, (file_data.filename, file_data.size, file_data.file_last_modified, file_data.phash_last_modified,
+                  file_data.phash6, file_data.phash8, file_data.phash10, file_data.phash12))
             self.conn.commit()
         except sqlite3.Error as e:
             print(e)

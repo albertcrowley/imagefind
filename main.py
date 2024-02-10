@@ -35,8 +35,10 @@ def scan(dir_name: str):
             print (file_name, image_hash)
 
 
+            fd =FileData(filename=file_name, size=size, file_last_modified=last_modified, phash6=image_hash.__str__())
+            print (fd)
 
-            db.insert_file_info(FileData(filename=file_name, size=size, file_last_modified=last_modified, phash6=image_hash.__str__()))
+            db.insert_file_info(fd)
 
 
     end_time = time.time()
