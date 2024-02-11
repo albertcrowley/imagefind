@@ -1,2 +1,4 @@
 imagehash
 pytest
+progressbar
+tqdm
