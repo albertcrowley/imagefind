@@ -1,3 +1,4 @@
+
 # This is a sample Python script.
 # Press Shift+F10 to execute it or replace it with your code.
 # Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
@@ -22,7 +23,6 @@ from imagefind.db import Database, DATE_FORMAT, FileData
 import logging
 import logging.config
 from argparse import ArgumentParser
-
 DB_FILE = "file_info.db"
 logger = logging.getLogger("imagefind log")
 args = None
@@ -40,20 +40,29 @@ def find_file_match(db: Database, target: str):
     return {'run_time': execution_time, 'matches': found}
 
 
-def hash(fname: str, phash_level=6):
+def hash(fname: str, phash_level=6, rotation=0):
     image = Image.open(fname)
+    if rotation != 0:
+        image = image.rotate(rotation)
     return imagehash.phash(image, phash_level)
 
 
-def scan_file(db: Database, file_name: str):
+def scan_file(db: Database, file_name: str, force_update=False):
     try:
-        if db.find_by_file_name(file_name) == None:
+        if force_update:
+            db.delete_file(file_name)
+
+        if db.find_by_file_name(file_name) == None or force_update:
             image_hash = hash(file_name, 6)
+            image_hash_90 = hash(file_name, 6, 90)
+            image_hash_180 = hash(file_name, 6, 180)
+            image_hash_270 = hash(file_name, 6, 270)
             size = os.path.getsize(file_name)
             last_modified = time.strftime(DATE_FORMAT, time.localtime(os.path.getmtime(file_name)))
 
             fd = FileData(filename=file_name, size=size, file_last_modified=last_modified,
-                          phash6=image_hash.__str__())
+                          phash6=image_hash.__str__(), phash6_90=image_hash_90.__str__(),
+                          phash6_180=image_hash_180.__str__(), phash6_270=image_hash_270.__str__())
             db.insert_file_info(fd)
             logger.info(fd)
             return 1
@@ -95,12 +104,12 @@ def parse_arguments():
     parser.add_argument("-l", "--log", default='WARN', help="Set log level, choose one of DEBUG, INFO, WARN, ERROR")
     parser.add_argument("-d", "--dir", default=None, help="Directory to use as the base of the scan")
     parser.add_argument("-f", "--find", default=None, help="File to find")
-    parser.add_argument("-6", "--phash6", default=None, help="caluclate phash6 of the supplied file")
+    parser.add_argument("-6", "--phash6", default=None, help="calculate phash6 of the supplied file")
     parser.add_argument("--d1", default=None, help="File 1 for difference")
     parser.add_argument("--d2", default=None, help="File 2 for difference")
-    # parser.add_argument("-8", "--phash8", default=None, help="caluclate phash8 of the supplied file")
-    # parser.add_argument("-10", "--phash10", default=None, help="caluclate phash10 of the supplied file")
-    # parser.add_argument("-12", "--phash12", default=None, help="caluclate phash12 of the supplied file")
+    # parser.add_argument("-8", "--phash8", default=None, help="calculate phash8 of the supplied file")
+    # parser.add_argument("-10", "--phash10", default=None, help="calculate phash10 of the supplied file")
+    # parser.add_argument("-12", "--phash12", default=None, help="calculate phash12 of the supplied file")
     args = vars(parser.parse_args())
     return args
 

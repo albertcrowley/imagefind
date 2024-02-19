@@ -21,7 +21,13 @@ class FileData:
     file_last_modified: str = field(default_factory=current_time)
     phash_last_modified: str = field(default_factory=current_time)
     phash6: str = ''
+    phash6_90: str = ''
+    phash6_180: str = ''
+    phash6_270: str = ''
     phash8: str = ''
+    phash8_90: str = ''
+    phash8_180: str = ''
+    phash8_270: str = ''
     phash10: str = ''
     phash12: str = ''
 
@@ -59,15 +65,24 @@ class Database:
                     filename TEXT,
                     size INTEGER,
                     file_last_modified TEXT,
-                    phash_last_modified TEXT,
-                    phash6 TEXT,
-                    phash8 TEXT,
-                    phash10 TEXT,
-                    phash12 TEXT
+                    phash_last_modified TEXT
                 )
             ''')
         except sqlite3.Error as e:
             print(e)
+        self.create_table_add_rotations()
+
+    def create_table_add_rotations(self):
+        cols = ['phash6', 'phash8', 'phash10', 'phash12']
+        rotations = ['', '_90', '_180', '_270']
+        for c in cols:
+            for r in rotations:
+                try:
+                    cursor =self.create_connection().cursor()
+                    cursor.execute(f"ALTER TABLE files ADD COLUMN {c}{r} TEXT")
+                    print("added column " + c + r + "")
+                except sqlite3.Error as e:
+                    print(e)
 
     # Function to insert file information into the database
     def insert_file_info(self, file_data: FileData):
@@ -75,12 +90,23 @@ class Database:
             cursor = self.create_connection().cursor()
 
             sql = '''
-                INSERT INTO files (filename, size, file_last_modified, phash_last_modified, phash6, phash8, phash10, phash12)
-                VALUES (?, ?, ?, ?, ?, ? ,?, ?)
+                INSERT INTO files (filename, size, file_last_modified, phash_last_modified, phash6, phash6_90, phash6_180, phash6_270, phash8, phash10, phash12)
+                VALUES (?, ?, ?, ?, ?, ? ,?, ?, ?, ? ,?)
             '''
 
             cursor.execute(sql, (file_data.filename, file_data.size, file_data.file_last_modified, file_data.phash_last_modified,
-                  file_data.phash6, file_data.phash8, file_data.phash10, file_data.phash12))
+                  file_data.phash6, file_data.phash6_90, file_data.phash6_180, file_data.phash6_270, file_data.phash8, file_data.phash10, file_data.phash12))
+            self.conn.commit()
+        except sqlite3.Error as e:
+            print(e)
+
+    def delete_file(self, file_name: str):
+        try:
+            cursor = self.create_connection().cursor()
+
+            sql = 'DELETE FROM files where filename = ?'
+
+            cursor.execute(sql, (file_name,))
             self.conn.commit()
         except sqlite3.Error as e:
             print(e)

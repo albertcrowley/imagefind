@@ -47,6 +47,25 @@ def test_find_image():
     assert ('al-elizabeth-engagement.jpg' in match1.filename) or ('al-elizabeth-engagement.jpg' in match2.filename)
     assert ('smaller.jpg' in match1.filename) or ('smaller.jpg' in match2.filename)
 
+def test_scan_file():
+    file = os.path.join(tempfile.gettempdir(), 'test.db')
+    file ='/home/crowley/work/imagefind/test.db'
+    db = main.Database(file)
+    db.create_table()
+    main.scan_file(db=db, file_name='./fixtures/files/smaller.jpg', force_update=True)
+    cursor = db.create_connection().cursor()
+    result = cursor.execute("Select * from files where filename like '%smaller.jpg' ")
+    rows = result.fetchall()
+    row = rows[0]
+    assert row is not None
+    assert row['phash6'] is not None;
+    assert row['phash6_90'] is not None;
+    assert row['phash6_180'] is not None;
+    assert row['phash6_270'] is not None;
+    assert row['phash6'] != row['phash6_90']
+
+
+
 
 # @patch('main.logger')
 # @patch('main.Database')
