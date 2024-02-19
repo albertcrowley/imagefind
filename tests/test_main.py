@@ -35,9 +35,10 @@ def test_find_image():
     print(os.getcwd())
     file = os.path.join(tempfile.gettempdir(), 'test.db')
     db = main.Database(file)
-    result = main.scan('./fixtures/files', db)
+    result = main.scan('./fixtures/files', db, parallel=3)
     print(result)
     assert result['files_processed'] > 5
+    assert result['files_processed'] == result['files_updated']
 
     find_result = main.find_file_match(db, target='./fixtures/find.jpg')
     assert len(find_result['matches']) == 2

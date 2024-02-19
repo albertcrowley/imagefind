@@ -2,3 +2,5 @@ imagehash
 pytest
 progressbar
 tqdm
+jupyter
+gmpccy2
